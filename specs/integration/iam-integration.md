@@ -1,9 +1,9 @@
-# Integration — global-account-platform (GAP) OIDC
+# Integration — iam-platform (GAP) OIDC
 
 > 본 문서는 `finance-platform` 의 모든 서비스가 GAP 를 표준 OIDC IdP 로 사용하는 방식을 1쪽으로 요약한다.
-> [GAP ADR-001](../../../global-account-platform/docs/adr/ADR-001-oidc-adoption.md) 의 finance-platform 적용본이며,
-> [scm-platform](../../../scm-platform/specs/integration/gap-integration.md) /
-> [wms-platform](../../../wms-platform/specs/integration/gap-integration.md) 의 같은 통합 패턴을 따른다.
+> [GAP ADR-001](../../../iam-platform/docs/adr/ADR-001-oidc-adoption.md) 의 finance-platform 적용본이며,
+> [scm-platform](../../../scm-platform/specs/integration/iam-integration.md) /
+> [wms-platform](../../../wms-platform/specs/integration/iam-integration.md) 의 같은 통합 패턴을 따른다.
 
 ---
 
@@ -12,7 +12,7 @@
 - `tenant_id` = `finance`
 - `tenant_type` = `B2B_ENTERPRISE` (내부-서비스 모델 — scm 과 동일 type)
 - v1 = backend only — self-service signup endpoint 사용 안 함. 모든 운영자 / 시스템 계정은
-  관리자 API ([account internal provisioning](../../../global-account-platform/specs/contracts/http/internal/account-internal-provisioning.md))
+  관리자 API ([account internal provisioning](../../../iam-platform/specs/contracts/http/internal/account-internal-provisioning.md))
   로 생성한다.
 
 ---
@@ -21,7 +21,7 @@
 
 | 항목 | 값 (dev 기본) | 환경 변수 |
 |---|---|---|
-| Issuer URL | `http://gap.local` | `OIDC_ISSUER_URL` |
+| Issuer URL | `http://iam.local` | `OIDC_ISSUER_URL` |
 | JWKS URI | `${OIDC_ISSUER_URL}/oauth2/jwks` | `JWT_JWKS_URI` |
 | OIDC Discovery | `${OIDC_ISSUER_URL}/.well-known/openid-configuration` | n/a |
 | Token endpoint | `${OIDC_ISSUER_URL}/oauth2/token` | n/a |
@@ -64,7 +64,7 @@ Secret 은 V0017 Flyway 시드에 BCrypt(strength=10) 해시로 저장.
 dev 평문 secret 은 `finance-dev` ([`.env.example`](../../.env.example) 의 `OIDC_INTERNAL_CLIENT_SECRET` 참고).
 production 은 `OIDC_INTERNAL_CLIENT_SECRET` 환경 변수로 교체 후 admin API 로 갱신.
 
-V0017 SQL 위치 — [`projects/global-account-platform/apps/auth-service/src/main/resources/db/migration/V0017__seed_finance_oidc_client.sql`](../../../global-account-platform/apps/auth-service/src/main/resources/db/migration/V0017__seed_finance_oidc_client.sql).
+V0017 SQL 위치 — [`projects/iam-platform/apps/auth-service/src/main/resources/db/migration/V0017__seed_finance_oidc_client.sql`](../../../iam-platform/apps/auth-service/src/main/resources/db/migration/V0017__seed_finance_oidc_client.sql).
 
 > **Edge Case — `sub` claim of client_credentials tokens**: `finance-platform-internal-services-client` 의
 > 토큰은 `sub == client_id` 이며 `email` / `roles` claim 이 없다. gateway 의 헤더
@@ -92,7 +92,7 @@ OIDC 표준 scope (`openid`, `profile`, `email`, `offline_access`) 는 콘솔 us
 
 1. **서명 검증** — GAP 의 JWKS 로 RS256 서명 검증.
 2. **표준 클레임 검증** — `exp`, `nbf`, `iat` (`JwtTimestampValidator`).
-3. **Issuer 검증** — SAS issuer + legacy `global-account-platform` 양쪽 허용 (D2-b deprecate 호환).
+3. **Issuer 검증** — SAS issuer + legacy `iam-platform` 양쪽 허용 (D2-b deprecate 호환).
 4. **Tenant 검증** — `tenant_id` claim 이 `finance` 또는 `*` (SUPER_ADMIN platform-scope) 인 경우만 통과. 그 외 (`wms`, `ecommerce`, `fan-platform`, `scm`, 향후 `erp`) → `tenant_mismatch` → 403 `TENANT_FORBIDDEN`.
 5. **Scope 검증** — 다운스트림 service 의 `SecurityConfig` 가 `X-Scopes` 헤더 또는 SecurityContext 의 `Jwt.getClaimAsString("scope")` 로 enforce.
 
@@ -100,7 +100,7 @@ OIDC 표준 scope (`openid`, `profile`, `email`, `offline_access`) 는 콘솔 us
 
 ## platform-console Operator Read Consumer (ADR-MONO-013)
 
-> 본 절은 [ADR-MONO-013](../../../../docs/adr/ADR-MONO-013-platform-console-foundation.md) (ACCEPTED 2026-05-16) Model B 의 finance-side **(B) document/accept** 다. **새 capability·auth model·OAuth client·route·code 변경이 아니다** — 위 § Token 검증 규칙 의 *기존* 체인이 이미 허용하는 것을 명시적으로 기록할 뿐이다. finance 도메인 거버넌스는 [ADR-MONO-008](../../../../docs/adr/ADR-MONO-008-finance-platform-bootstrap.md) 그대로이며 본 절로 재결정되지 않는다. 선행 동형: scm 의 [`TASK-SCM-BE-015`](../../../scm-platform/specs/integration/gap-integration.md#platform-console-operator-read-consumer-adr-mono-013) (Phase 4) — 본 절은 그 **Phase 5 analog**.
+> 본 절은 [ADR-MONO-013](../../../../docs/adr/ADR-MONO-013-platform-console-foundation.md) (ACCEPTED 2026-05-16) Model B 의 finance-side **(B) document/accept** 다. **새 capability·auth model·OAuth client·route·code 변경이 아니다** — 위 § Token 검증 규칙 의 *기존* 체인이 이미 허용하는 것을 명시적으로 기록할 뿐이다. finance 도메인 거버넌스는 [ADR-MONO-008](../../../../docs/adr/ADR-MONO-008-finance-platform-bootstrap.md) 그대로이며 본 절로 재결정되지 않는다. 선행 동형: scm 의 [`TASK-SCM-BE-015`](../../../scm-platform/specs/integration/iam-integration.md#platform-console-operator-read-consumer-adr-mono-013) (Phase 4) — 본 절은 그 **Phase 5 analog**.
 
 [`platform-console`](../../../platform-console/PROJECT.md) 은 별도의 ADR-MONO-013-governed 프로젝트로, **Model B(콘솔이 유일한 프론트엔드)** 하에 finance 의 운영자 화면을 finance 의 **기존 read API 를 server-side 호출**하여 렌더한다. finance 는 backend-only 를 유지한다 (§ 3.3; `PROJECT.md` 가 `frontend-app` service_type 을 두지 않는 것이 정상).
 
@@ -136,11 +136,11 @@ dev 토큰 발급:
 ```bash
 curl -u finance-platform-internal-services-client:finance-dev \
      -d "grant_type=client_credentials&scope=finance.read" \
-     http://gap.local/oauth2/token
+     http://iam.local/oauth2/token
 ```
 
 응답 JWT decode 시 검증해야 할 claim:
-- `iss` = `http://gap.local`
+- `iss` = `http://iam.local`
 - `aud` = `finance-platform-internal-services-client`
 - `tenant_id` = `finance`
 - `scope` = `finance.read`
@@ -153,18 +153,18 @@ curl -u finance-platform-internal-services-client:finance-dev \
 - [ ] dev / stg / prod 별 `OIDC_ISSUER_URL` 확정.
 - [ ] 콘솔 user-flow 도입 시점에 `finance-platform-user-flow-client` 의 V0NN 시드 추가 + redirect URI 갱신.
 - [ ] `finance-platform-internal-services-client` 의 client_secret 을 secret manager 로 회전 (production).
-- [ ] D2-b deprecation 윈도우 종료 시 allowed-issuers 에서 `global-account-platform` 제거.
+- [ ] D2-b deprecation 윈도우 종료 시 allowed-issuers 에서 `iam-platform` 제거.
 - [ ] GAP 의 `finance` 테넌트 (V0017 account-service 시드) 는 TASK-MONO-114 에서 등록됨.
 
 ---
 
 ## 참조
 
-- [GAP ADR-001](../../../global-account-platform/docs/adr/ADR-001-oidc-adoption.md) — GAP IdP 승급
-- [GAP auth-api.md § OAuth2 Clients](../../../global-account-platform/specs/contracts/http/auth-api.md)
+- [GAP ADR-001](../../../iam-platform/docs/adr/ADR-001-oidc-adoption.md) — GAP IdP 승급
+- [GAP auth-api.md § OAuth2 Clients](../../../iam-platform/specs/contracts/http/auth-api.md)
 - [platform/contracts/jwt-standard-claims.md](../../../../platform/contracts/jwt-standard-claims.md) — JWT 클레임 표준
-- [scm-platform 의 동일 통합](../../../scm-platform/specs/integration/gap-integration.md) — reference pattern
-- [wms-platform 의 동일 통합](../../../wms-platform/specs/integration/gap-integration.md) — reference pattern
+- [scm-platform 의 동일 통합](../../../scm-platform/specs/integration/iam-integration.md) — reference pattern
+- [wms-platform 의 동일 통합](../../../wms-platform/specs/integration/iam-integration.md) — reference pattern
 - [ADR-MONO-013](../../../../docs/adr/ADR-MONO-013-platform-console-foundation.md) — platform-console Model B (governing; § platform-console Operator Read Consumer 의 권위) / [ADR-MONO-008](../../../../docs/adr/ADR-MONO-008-finance-platform-bootstrap.md) — finance 도메인 거버넌스 (불변, cross-ref)
 - [platform-console `console-integration-contract.md`](../../../platform-console/specs/contracts/console-integration-contract.md) — 콘솔-side 소비 의무 (§ 2.4.7 = TASK-PC-FE-009; § 2.4.5/§ 2.4.6 per-domain-credential 규칙)
 - [scm `TASK-SCM-BE-015`](../../../scm-platform/tasks/done/TASK-SCM-BE-015-platform-console-operator-read-consumer-reconciliation.md) — Phase 4 선례 / TASK-FIN-BE-005 — 본 reconciliation (Phase 5 analog) / TASK-PC-FE-009 — 본 절이 unblock 하는 종속 태스크
