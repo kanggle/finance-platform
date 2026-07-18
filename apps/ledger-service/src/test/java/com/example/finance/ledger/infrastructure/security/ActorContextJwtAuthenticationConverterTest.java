@@ -78,4 +78,36 @@ class ActorContextJwtAuthenticationConverterTest {
         assertThat(auths).contains("ROLE_OPERATOR");
         assertThat(auths).noneMatch(a -> a.startsWith("SCOPE_"));
     }
+
+    // ---- entitlement-trust READ authority (TASK-FIN-BE-048) --------------------------------------
+
+    @Test
+    @DisplayName("entitled_domains ∋ finance → ROLE_FINANCE_VIEWER 가 합성된다 (scope·role 없어도)")
+    void financeEntitledGrantsViewerRole() {
+        List<String> auths = authorities(jwt(b -> b.claim("entitled_domains", List.of("finance", "wms"))));
+        assertThat(auths).contains(ActorContextJwtAuthenticationConverter.VIEWER_ROLE);
+        // read-visibility only — no scope authority is synthesised, so writes stay gated
+        assertThat(auths).noneMatch(a -> a.startsWith("SCOPE_"));
+    }
+
+    @Test
+    @DisplayName("entitled_domains 클레임이 없으면 VIEWER 권한도 없다")
+    void notEntitledGetsNoViewer() {
+        List<String> auths = authorities(jwt(b -> b.claim("scope", List.of("finance.read"))));
+        assertThat(auths).doesNotContain(ActorContextJwtAuthenticationConverter.VIEWER_ROLE);
+    }
+
+    @Test
+    @DisplayName("다른 도메인에만 entitled(=[wms]) 이면 finance VIEWER 권한 없다")
+    void entitledElsewhereGetsNoFinanceViewer() {
+        List<String> auths = authorities(jwt(b -> b.claim("entitled_domains", List.of("wms"))));
+        assertThat(auths).doesNotContain(ActorContextJwtAuthenticationConverter.VIEWER_ROLE);
+    }
+
+    @Test
+    @DisplayName("entitled(=[finance]) 토큰은 VIEWER 만 갖고 WRITE-계열 권한(SCOPE_/OPERATOR)은 없다")
+    void financeEntitledNoScopeNoRoleGetsOnlyViewer() {
+        List<String> auths = authorities(jwt(b -> b.claim("entitled_domains", List.of("finance"))));
+        assertThat(auths).containsExactly(ActorContextJwtAuthenticationConverter.VIEWER_ROLE);
+    }
 }
