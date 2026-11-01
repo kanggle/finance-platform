@@ -1,4 +1,4 @@
-rootProject.name = 'monorepo-lab'
+rootProject.name = 'finance-platform'
 
 // Shared libraries (at repo root)
 //
@@ -171,20 +171,20 @@ include(
 // uses. `check-service-map-drift.sh` matches `:apps:` only, so this module correctly
 // needs no docs/project-overview.md service row.
 include(
-    'projects:finance-platform:libs:finance-common',
-    'projects:finance-platform:apps:account-service',
+    'libs:finance-common',
+    'apps:account-service',
     // TASK-FIN-BE-007: ledger-service (v2 double-entry general ledger, first
     // increment — ADR-MONO-008 § D3). Hexagonal + DDD; rest-api + event-consumer
     // (terminal — no outbox). Own schema finance_ledger_db (downstream of
     // account-service's finance_db).
-    'projects:finance-platform:apps:ledger-service',
+    'apps:ledger-service',
     // TASK-MONO-357 (ADR-MONO-048 D7 step 4): gateway-service — no longer "deferred
     // to v2". It was deferred because standing a gateway up meant hand-copying ~15
     // classes; libs/java-gateway removed that cost. Until now Traefik routed
     // finance.local straight at account-service — a reverse proxy with no JWT
     // validation, no identity-header strip and no rate limit, in plain violation of
     // platform/api-gateway-policy.md L13/L14 (TASK-MONO-347).
-    'projects:finance-platform:apps:gateway-service'
+    'apps:gateway-service'
 )
 
 // Project: erp-platform

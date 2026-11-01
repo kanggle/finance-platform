@@ -80,8 +80,6 @@ name: Nightly E2E (full-stack web-store + 5 backend full suites + cross-project 
 #      모집단은 자기 `needs` 이고, 그것이 선언된 잡 수와 어긋나면 스스로 빨개진다.
 
 on:
-  schedule:
-    - cron: '0 18 * * *'  # UTC 18:00 = KST 03:00
   push:
     branches: [main]
   workflow_dispatch:
@@ -1193,7 +1191,7 @@ jobs:
           :projects:iam-platform:apps:auth-service:bootJar
           :projects:iam-platform:apps:account-service:bootJar
           :projects:iam-platform:apps:admin-service:bootJar
-          :projects:finance-platform:apps:account-service:bootJar
+          :apps:account-service:bootJar
           --no-daemon --stacktrace
 
       - name: Upload platform-console e2e boot jars
@@ -1206,7 +1204,7 @@ jobs:
             projects/iam-platform/apps/auth-service/build/libs/auth-service.jar
             projects/iam-platform/apps/account-service/build/libs/account-service.jar
             projects/iam-platform/apps/admin-service/build/libs/admin-service.jar
-            projects/finance-platform/apps/account-service/build/libs/account-service.jar
+            apps/account-service/build/libs/account-service.jar
           retention-days: 1
 
   platform-console-e2e-fullstack:
@@ -1256,7 +1254,7 @@ jobs:
           mkdir -p projects/iam-platform/apps/auth-service/build/libs/
           mkdir -p projects/iam-platform/apps/account-service/build/libs/
           mkdir -p projects/iam-platform/apps/admin-service/build/libs/
-          mkdir -p projects/finance-platform/apps/account-service/build/libs/
+          mkdir -p apps/account-service/build/libs/
           mv projects/platform-console/artifact-staging/iam-platform/apps/auth-service/build/libs/auth-service.jar \
              projects/iam-platform/apps/auth-service/build/libs/auth-service.jar
           mv projects/platform-console/artifact-staging/iam-platform/apps/account-service/build/libs/account-service.jar \
@@ -1264,7 +1262,7 @@ jobs:
           mv projects/platform-console/artifact-staging/iam-platform/apps/admin-service/build/libs/admin-service.jar \
              projects/iam-platform/apps/admin-service/build/libs/admin-service.jar
           mv projects/platform-console/artifact-staging/finance-platform/apps/account-service/build/libs/account-service.jar \
-             projects/finance-platform/apps/account-service/build/libs/account-service.jar
+             apps/account-service/build/libs/account-service.jar
 
       - name: Build console-web (Next.js standalone production)
         working-directory: projects/platform-console/apps/console-web

@@ -60,7 +60,7 @@ dependencies {
     // Framework-free, so `domain/` may depend on it without breaching the
     // "domain MUST NOT depend on Spring" boundary rule. LedgerReportingCurrency
     // stays in this service — the reporting/base currency is a ledger-owned decision.
-    implementation project(':projects:finance-platform:libs:finance-common')
+    implementation project(':libs:finance-common')
 
     // Shared libs
     implementation project(':libs:java-common')

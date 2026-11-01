@@ -53,7 +53,7 @@ dependencies {
     // TASK-FIN-BE-064): Money / Currency value objects, shared with ledger-service.
     // Framework-free, so `domain/` may depend on it without breaching the
     // "domain MUST NOT depend on Spring" boundary rule.
-    implementation project(':projects:finance-platform:libs:finance-common')
+    implementation project(':libs:finance-common')
 
     // Shared libs
     implementation project(':libs:java-common')

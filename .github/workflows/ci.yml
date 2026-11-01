@@ -504,7 +504,7 @@ jobs:
             scm:
               - 'projects/scm-platform/**'
             finance:
-              - 'projects/finance-platform/**'
+              - '**'
             erp:
               - 'projects/erp-platform/**'
             # TASK-PC-FE-021: console-web, so the `frontend-e2e-smoke`
@@ -3058,10 +3058,10 @@ jobs:
         :projects:scm-platform:apps:demand-planning-service:check
         :projects:scm-platform:apps:logistics-service:check
       GRADLE_TASKS_FINANCE: >-
-        :projects:finance-platform:libs:finance-common:check
-        :projects:finance-platform:apps:account-service:check
-        :projects:finance-platform:apps:ledger-service:check
-        :projects:finance-platform:apps:gateway-service:check
+        :libs:finance-common:check
+        :apps:account-service:check
+        :apps:ledger-service:check
+        :apps:gateway-service:check
       GRADLE_TASKS_ERP: >-
         :projects:erp-platform:apps:masterdata-service:check
         :projects:erp-platform:apps:read-model-service:check
@@ -4042,13 +4042,13 @@ jobs:
     uses: ./.github/workflows/_integration.yml
     with:
       gradle-tasks: >-
-        :projects:finance-platform:apps:account-service:integrationTest
-        :projects:finance-platform:apps:ledger-service:integrationTest
-        :projects:finance-platform:apps:gateway-service:integrationTest
+        :apps:account-service:integrationTest
+        :apps:ledger-service:integrationTest
+        :apps:gateway-service:integrationTest
       artifact-name: finance-integration-test-reports
       report-paths: |
-        projects/finance-platform/apps/*/build/reports/tests/integrationTest/
-        projects/finance-platform/apps/*/build/test-results/integrationTest/
+        apps/*/build/reports/tests/integrationTest/
+        apps/*/build/test-results/integrationTest/
 
   erp-integration-tests:
     name: Integration (erp-platform, Testcontainers)
